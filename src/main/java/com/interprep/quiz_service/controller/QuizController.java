@@ -20,7 +20,9 @@ public class QuizController {
     @PostMapping("create")
 //    public ResponseEntity<String> createQuiz(@RequestParam String category, @RequestParam int numQ, @RequestParam String title){
     public ResponseEntity<String> createQuiz(@RequestBody QuizDto quizDto){   //Data Transfer object
+        System.out.println("HI");
         return quizService.createQuiz(quizDto.getCategoryName(), quizDto.getNumOfQuestions(), quizDto.getTitle());
+
     }
 
     @GetMapping("get/{id}")
