@@ -9,6 +9,9 @@ public class Response {
     private Integer id;
     private String response;
 
+    public Response(int i, String answer) {
+    }
+
     public Integer getId() {
         return id;
     }

@@ -8,6 +8,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,21 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
-
-    @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Bean
-    public AuthenticationProvider authProvider() {
-        DaoAuthenticationProvider provider =new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
-
-        return provider;
-
-    }
-
+public class SecurityConfig extends WebSecurityConfiguration {
 
 
 
@@ -70,25 +57,25 @@ public class SecurityConfig {
 
     // Creating UserDetailsService() for creating multiple users
 
-    @Bean
-    public UserDetailsService userDetailsService(){
-
-        UserDetails user = User
-                .withDefaultPasswordEncoder()
-                .username("nivya")
-                .password("nivya@123")
-                .roles("USER")
-                .build();
-
-        UserDetails admin = User
-                .withDefaultPasswordEncoder()
-                .username("admin")
-                .password("admin@123")
-                .roles("ADMIN")
-                .build();
-
-
-        return new InMemoryUserDetailsManager(user, admin);
-
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService(){
+//
+//        UserDetails user = User
+//                .withDefaultPasswordEncoder()
+//                .username("nivya")
+//                .password("nivya@123")
+//                .roles("USER")
+//                .build();
+//
+//        UserDetails admin = User
+//                .withDefaultPasswordEncoder()
+//                .username("admin")
+//                .password("admin@123")
+//                .roles("ADMIN")
+//                .build();
+//
+//
+//        return new InMemoryUserDetailsManager(user, admin);
+//
+//    }
 }
