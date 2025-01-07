@@ -8,7 +8,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,63 +18,59 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfiguration {
+public class SecurityConfig {
 
+    @Autowired
+    private UserDetailsService userDetailsService;
 
-
-    //Configuring our own security features by disabling default spring settings
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-
-        //Builder Pattern
-        http
-                .csrf(customizer ->customizer.disable())
-
-                .authorizeHttpRequests(request ->request.anyRequest().authenticated())
-
-                .httpBasic(Customizer.withDefaults())
-
-                .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        return http.build();
-
-//        //Disable  csrf token
-//        http.csrf(customizer ->customizer.disable());
-//
-//        //Enabling security for the requests
-//        http.authorizeHttpRequests(request ->request.anyRequest().authenticated());
-//
-//        //Provide Form Login
-//        http.formLogin(Customizer.withDefaults());
-//        http.httpBasic(Customizer.withDefaults());
-//
-//        //Making the request stateless -> we don't have same session ID
-//        http.sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
+    public AuthenticationProvider authProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
+        return provider;
     }
 
-    // Creating UserDetailsService() for creating multiple users
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(customizer -> customizer.disable())
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .requestMatchers("/", "/login**", "/error**", "/user/register", "/oauth2/authorization/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2Login -> oauth2Login
+                        .defaultSuccessUrl("/dashboard", true)
+                        .failureHandler((request, response, exception) -> {
+                            response.sendRedirect("/login?error=true&message=" + exception.getMessage());
+                        })
+                )
+                .httpBasic(Customizer.withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        return http.build();
+    }
 
-//    @Bean
-//    public UserDetailsService userDetailsService(){
-//
-//        UserDetails user = User
-//                .withDefaultPasswordEncoder()
-//                .username("nivya")
-//                .password("nivya@123")
-//                .roles("USER")
-//                .build();
-//
-//        UserDetails admin = User
-//                .withDefaultPasswordEncoder()
-//                .username("admin")
-//                .password("admin@123")
-//                .roles("ADMIN")
-//                .build();
-//
-//
-//        return new InMemoryUserDetailsManager(user, admin);
-//
-//    }
+    @Bean
+    public UserDetailsService userDetailsService() {
+        UserDetails user = User
+                .withDefaultPasswordEncoder()
+                .username("nivya")
+                .password("nivya@123")
+                .roles("USER")
+                .build();
+
+        UserDetails admin = User
+                .withDefaultPasswordEncoder()
+                .username("admin")
+                .password("admin@123")
+                .roles("ADMIN")
+                .build();
+
+        return new InMemoryUserDetailsManager(user, admin);
+    }
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
 }
